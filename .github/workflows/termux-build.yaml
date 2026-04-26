@@ -1,8 +1,7 @@
 name: Build Vaultwarden for Termux
 
-# This allows you to trigger the build manually from the Actions tab
 on:
-  workflow_dispatch: 
+  workflow_dispatch:
 
 jobs:
   build:
@@ -16,13 +15,21 @@ jobs:
         with:
           targets: aarch64-linux-android
 
-      - name: Install cross
-        uses: taiki-e/install-action@cross
+      - name: Setup Android NDK
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r27c
+        id: setup-ndk
 
-      # Compiling with 'cross' avoids needing to manually set up the Android NDK in CI.
-      # We specify sqlite to keep the binary lightweight for your phone.
       - name: Build Binary
-        run: cross build --release --target aarch64-linux-android --features sqlite,vendored_openssl
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+          CC_aarch64_linux_android: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang
+          CXX_aarch64_linux_android: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang++
+          AR_aarch64_linux_android: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar
+          RANLIB_aarch64_linux_android: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ranlib
+          CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android24-clang
+        run: cargo build --release --target aarch64-linux-android --features sqlite,vendored_openssl
 
       - name: Upload Binary Artifact
         uses: actions/upload-artifact@v4
