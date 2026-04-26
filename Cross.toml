@@ -1,0 +1,5 @@
+[target.aarch64-linux-android]
+pre-build = [
+    "apt-get update -q",
+    "apt-get install -y --no-install-recommends perl make",
+]
