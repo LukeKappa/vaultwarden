@@ -22,7 +22,7 @@ jobs:
       # Compiling with 'cross' avoids needing to manually set up the Android NDK in CI.
       # We specify sqlite to keep the binary lightweight for your phone.
       - name: Build Binary
-        run: cross build --release --target aarch64-linux-android --features sqlite
+        run: cross build --release --target aarch64-linux-android --features sqlite,vendored_openssl
 
       - name: Upload Binary Artifact
         uses: actions/upload-artifact@v4
