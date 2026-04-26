@@ -1,0 +1,32 @@
+name: Build Vaultwarden for Termux
+
+# This allows you to trigger the build manually from the Actions tab
+on:
+  workflow_dispatch: 
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+
+      - name: Install cross
+        uses: taiki-e/install-action@cross
+
+      # Compiling with 'cross' avoids needing to manually set up the Android NDK in CI.
+      # We specify sqlite to keep the binary lightweight for your phone.
+      - name: Build Binary
+        run: cross build --release --target aarch64-linux-android --features sqlite
+
+      - name: Upload Binary Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vaultwarden-aarch64-bionic
+          path: target/aarch64-linux-android/release/vaultwarden
+          retention-days: 7
