@@ -1,6 +1,5 @@
 name: Build Vaultwarden for Termux
 
-# This allows you to trigger the build manually from the Actions tab
 on:
   workflow_dispatch: 
 
@@ -16,15 +15,19 @@ jobs:
         with:
           targets: aarch64-linux-android
 
-      - name: Install cross
-        uses: taiki-e/install-action@cross
+      - name: Ensure target is installed
+        run: rustup target add aarch64-linux-android
 
-      # Compiling with 'cross' avoids needing to manually set up the Android NDK in CI.
-      # We specify sqlite to keep the binary lightweight for your phone.
-      # vendored_openssl compiles OpenSSL from source since the cross container
-      # doesn't have a pre-built OpenSSL for aarch64-linux-android.
+      - name: Setup Android NDK
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26d
+
+      - name: Install cargo-ndk
+        run: cargo install cargo-ndk
+
       - name: Build Binary
-        run: cross build --release --target aarch64-linux-android --features sqlite,vendored_openssl
+        run: cargo ndk -t aarch64-linux-android build --release --features sqlite,vendored_openssl
 
       - name: Upload Binary Artifact
         uses: actions/upload-artifact@v4
