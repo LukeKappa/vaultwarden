@@ -30,13 +30,15 @@ pub use crate::api::{
     },
     web::catchers as web_catchers,
     web::routes as web_routes,
-    web::static_files,
+    web::{invalidate_css_cache, static_files},
 };
-use crate::db::{
-    models::{OrgPolicy, OrgPolicyType, User},
-    DbConn,
+use crate::{
+    CONFIG,
+    db::{
+        DbConn,
+        models::{OrgPolicy, OrgPolicyType, User},
+    },
 };
-use crate::CONFIG;
 
 // Type aliases for API methods results
 pub type ApiResult<T> = Result<T, crate::error::Error>;
@@ -74,6 +76,7 @@ impl PasswordOrOtpData {
     }
 }
 
+#[expect(clippy::struct_excessive_bools, reason = "Bitwarden clients expect the data in this specific format")]
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MasterPasswordPolicy {
